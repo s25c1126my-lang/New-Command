@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Takumi Yokoyama
+# SPDX-License-Identifier: BSD-3-Clause
 import json
 import sys
 
@@ -57,3 +59,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
