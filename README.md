@@ -12,12 +12,40 @@ Drone-Related Commands
 ## 必要な環境
 - Python 3.x
 
+## インストール方法
+
+以下のコマンドを順に実行します。
+
+```bash
+\$ git clone [https://github.com/<あなたのユーザー名>/New-Command.git](https://github.com/あなたのユーザー名/New-Command.git)
+$cd New-Command$ chmod +x drone_project.py
+
 ## 使い方
 
 ```bash
-echo '\$GPGGA,083559.00,3541.1493,N,13942.2312,E,1,08,1.0,15.0,M,39.5,M,,*42' | ./drone_nmea.py
+$echo '$GPGGA,123519,3541.1234,N,14001.5678,E,1,08,0.9,25.4,M,46.9,M,,*47' | ./drone_project.py
 
+↓出力結果
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Point",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          140.02613,
+          35.68539,
+          25.4
+        ]
+      },
+      "properties": {}
+    }
+  ]
+}
+```
 
+## ライセンス
 BSD 3-Clause License
 
 Copyright (c) 2026, Takumi Yokoyama
