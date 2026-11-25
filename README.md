@@ -1,40 +1,42 @@
 
-# New-Command
-
-## drone_project
+# drone_project
 
 ドローンなどのGPSログ（NMEAフォーマット）を標準入力から受け取り、
 GeoJSON形式に変換して標準出力するLinuxコマンドです。
 
-GPSの位置情報を地図上に表示するためのデータ変換などに利用できます。
+GPSの測位地点や飛行軌跡を地図上に可視化するための
+データ変換に利用できます。
 
 ## 機能
 
-- NMEAフォーマット（`$GPGGA`）のテキストデータを解析
-- 緯度・経度を度分表記から10進数表記に変換
-- GPSの位置情報をGeoJSON FeatureCollection形式で出力
-- 複数行のGPSログを一括処理
-- 解析時のエラーメッセージを標準エラー出力（stderr）に出力
+- NMEAフォーマット（`$GPGGA`, `$GNRMC`）の解析
+- 緯度・経度の度分表記から10進数表記への変換
+- GeoJSON FeatureCollection形式での出力
+- 複数行のGPSログの一括処理
+- 無効なGPS測位データの除外
+- 不正な座標データの検出
+- 平均海面基準の高度情報の取得（GPGGAのみ）
+- 飛行軌跡の生成（`--track`）
+- エラーメッセージの標準エラー出力
 
 ## インストール方法
 
-以下のコマンドを順に実行してください。
+## インストール方法
 
 ```bash
-$ git clone https://github.com/ユーザー名/New-Command.git
+$ git clone https://github.com/s25c1126my-lang/New-Command.git
 $ cd New-Command
-$ chmod +x drone_project.py
 ```
 
 ## 使い方
 
-### GPSデータを直接入力する場合
+### GPSの位置情報を取得する
 
 ```bash
-$ echo '$GPGGA,123519,3541.1234,N,14001.5678,E,1,08,0.9,25.4,M,46.9,M,,*79' | ./drone_project.py
+$ echo '$GPGGA,123519,3541.1234,N,14001.5678,E,1,08,0.9,25.4,M,46.9,M,,*79' | python3 drone_project.py
 ```
 
-### 出力結果
+出力結果：
 
 ```json
 {
@@ -46,44 +48,110 @@ $ echo '$GPGGA,123519,3541.1234,N,14001.5678,E,1,08,0.9,25.4,M,46.9,M,,*79' | ./
         "type": "Point",
         "coordinates": [
           140.02613,
-          35.68539,
-          25.4
+          35.68539
         ]
       },
-      "properties": {}
+      "properties": {
+        "altitude_msl_m": 25.4
+      }
     }
   ]
 }
 ```
 
-座標は経度、緯度、高度の順に出力されます。
-現在の高度はGPGGAに含まれる平均海面基準の値です。
+座標は経度、緯度の順に出力されます。
+高度は平均海面基準のメートル単位で格納されます。
 
-### GPSログファイルを読み込む場合
+### 飛行軌跡を生成する
 
-```bash
-$ cat gps.log | ./drone_project.py
-```
-
-### 変換結果をファイルに保存する場合
+`--track` オプションを使用することで、
+複数のGPS測位地点を入力順に結び、LineString形式で出力できます。
 
 ```bash
-$ cat gps.log | ./drone_project.py > flight.geojson
+$ printf '%s\n' \
+  '$GPGGA,123519,3541.1234,N,14001.5678,E,1,08,0.9,25.4,M,46.9,M,,*79' \
+  '$GPGGA,123520,3541.5678,N,14001.9876,E,1,08,0.9,26.0,M,46.9,M,,*70' \
+  | python3 drone_project.py --track
 ```
+
+出力結果：
+
+```json
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            140.02613,
+            35.68539
+          ],
+          [
+            140.03312666666667,
+            35.692796666666666
+          ]
+        ]
+      },
+      "properties": {
+        "point_count": 2
+      }
+    }
+  ]
+}
+```
+
+### GPSログファイルを変換する
+
+```bash
+$ cat gps.log | python3 drone_project.py
+```
+
+### 飛行軌跡をファイルに保存する
+
+```bash
+$ cat gps.log | python3 drone_project.py --track > flight.geojson
+```
+
+### ヘルプを表示する
+
+```bash
+$ python3 drone_project.py --help
+```
+
+## オプション
+
+| オプション | 説明 |
+| --- | --- |
+| なし | GPS測位地点をPoint形式で出力 |
+| `--track` | 飛行軌跡をLineString形式で出力 |
+| `--help` | 使用方法を表示 |
+
+## 注意事項
+
+- 飛行軌跡の生成には2点以上の有効なGPS測位地点が必要です。
+- 飛行軌跡は入力されたデータの順番に生成されます。
+- 飛行軌跡には高度情報を含みません。
+- NMEAのチェックサム検証には対応していません。
+- GPS測位地点の重複除去には対応していません。
 
 ## 必要なソフトウェア
 
 - Python 3
+- 外部ライブラリは不要
 
-## 動作環境
+## テスト環境
 
-- OS：テスト環境を記載
-- Python：テストしたバージョンを記載
+- OS：確認後に記載
+- Python：確認後に記載
 
 ## 参考資料
 
-- [NMEA GPGGA仕様](https://docs.novatel.com/OEM7/Content/Logs/GPGGA.htm)
-- [GeoJSON仕様（RFC 7946）](https://www.rfc-editor.org/rfc/rfc7946.html)
+- [NMEA GPGGA](https://docs.novatel.com/OEM7/Content/Logs/GPGGA.htm)
+- [NMEA GPRMC](https://docs.novatel.com/OEM7/Content/Logs/GPRMC.htm)
+- [GeoJSON RFC 7946](https://www.rfc-editor.org/rfc/rfc7946.html)
 
 ## ライセンス
 
