@@ -6,7 +6,7 @@
 import json
 import sys
 import math
-
+import argparse  
 
 def parse_nmea_latlon(lat_str, lat_dir, lon_str, lon_dir):
     """NMEAの度分表記を10進数の緯度経度に変換"""
@@ -45,6 +45,18 @@ def parse_nmea_latlon(lat_str, lat_dir, lon_str, lon_dir):
 
 
 def main():
+    parser = argparse.ArgumentParser(
+        description="Convert NMEA GPS logs to GeoJSON"
+    )
+
+    parser.add_argument(
+        "--track",
+        action="store_true",
+        help="Output flight path as LineString"
+    )
+
+    args = parser.parse_args()
+
     features = []
 
     for line in sys.stdin:
@@ -112,6 +124,36 @@ def main():
         except (ValueError, IndexError) as e:
             sys.stderr.write(f"Error: {e}: {line}\n")
 
+      # 飛行軌跡の生成
+     # 飛行軌跡の生成
+    if args.track:
+        coordinates = []
+
+        for feature in features:
+            coordinates.append(
+                feature["geometry"]["coordinates"]
+            )
+
+        if len(coordinates) < 2:
+            sys.stderr.write(
+                "Error: At least two GPS points are required\n"
+            )
+            sys.exit(1)
+
+        features = [
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": coordinates,
+                },
+                "properties": {
+                    "point_count": len(coordinates),
+                },
+            }
+        ]
+
+    # GeoJSONの生成
     geojson = {
         "type": "FeatureCollection",
         "features": features,
