@@ -1,6 +1,7 @@
- #!/usr/bin/env python3
+#!/usr/bin/env python3
 # SPDX-FileCopyrightText: 2026 Takumi Yokoyama
 # SPDX-License-Identifier: BSD-3-Clause
+
 import json
 import sys
 
@@ -29,7 +30,7 @@ def main():
         if not line:
             continue
 
-        parts = line.strip().split(",")
+        parts = line.split(",")
 
         # $GPGGA または $GNRMC のGPS位置情報行を解析
         if parts[0] in ["$GPGGA", "$GNRMC"] and len(parts) >= 6:
@@ -49,11 +50,11 @@ def main():
                 }
                 features.append(feature)
             except (ValueError, IndexError):
-                # エラーメッセージは標準エラー出力（sys.stderr）へ[cite: 1]
+
                 sys.stderr.write(f"Error: Invalid NMEA format: {line}\n")
 
     geojson = {"type": "FeatureCollection", "features": features}
-    # 結果のみを標準出力（sys.stdout）へ出力[cite: 1]
+    
     print(json.dumps(geojson, indent=2))
 
 
