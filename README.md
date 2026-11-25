@@ -1,36 +1,47 @@
-# New-Command
-Drone-Related Commands
-# drone_project
 
-ドローン等のGPSログ（NMEAフォーマット）を標準入力から受け取り、GeoJSONフォーマットに変換して標準出力するLinuxコマンドです。
+# New-Command
+
+## drone_project
+
+ドローンなどのGPSログ（NMEAフォーマット）を標準入力から受け取り、
+GeoJSON形式に変換して標準出力するLinuxコマンドです。
+
+GPSの位置情報を地図上に表示するためのデータ変換などに利用できます。
 
 ## 機能
-- NMEAフォーマット（`$GPGGA`, `$GNRMC`）のテキスト入力を解析
-- 緯度・経度を10進数に変換し、GeoJSON FeatureCollection形式で出力
-- エラー行は標準エラー出力（stderr）に出力
 
-## 必要な環境
-- Python 3.x
+- NMEAフォーマット（`$GPGGA`）のテキストデータを解析
+- 緯度・経度を度分表記から10進数表記に変換
+- GPSの位置情報をGeoJSON FeatureCollection形式で出力
+- 複数行のGPSログを一括処理
+- 解析時のエラーメッセージを標準エラー出力（stderr）に出力
 
 ## インストール方法
 
-以下のコマンドを順に実行します。
+以下のコマンドを順に実行してください。
 
 ```bash
-\$ git clone [https://github.com/<あなたのユーザー名>/New-Command.git](https://github.com/あなたのユーザー名/New-Command.git)
-$cd New-Command$ chmod +x drone_project.py
+$ git clone https://github.com/ユーザー名/New-Command.git
+$ cd New-Command
+$ chmod +x drone_project.py
+```
 
 ## 使い方
 
-```bash
-$echo '$GPGGA,123519,3541.1234,N,14001.5678,E,1,08,0.9,25.4,M,46.9,M,,*47' | ./drone_project.py
+### GPSデータを直接入力する場合
 
-↓出力結果
+```bash
+$ echo '$GPGGA,123519,3541.1234,N,14001.5678,E,1,08,0.9,25.4,M,46.9,M,,*79' | ./drone_project.py
+```
+
+### 出力結果
+
+```json
 {
   "type": "FeatureCollection",
   "features": [
     {
-      "type": "Point",
+      "type": "Feature",
       "geometry": {
         "type": "Point",
         "coordinates": [
@@ -45,32 +56,38 @@ $echo '$GPGGA,123519,3541.1234,N,14001.5678,E,1,08,0.9,25.4,M,46.9,M,,*47' | ./d
 }
 ```
 
+座標は経度、緯度、高度の順に出力されます。
+現在の高度はGPGGAに含まれる平均海面基準の値です。
+
+### GPSログファイルを読み込む場合
+
+```bash
+$ cat gps.log | ./drone_project.py
+```
+
+### 変換結果をファイルに保存する場合
+
+```bash
+$ cat gps.log | ./drone_project.py > flight.geojson
+```
+
+## 必要なソフトウェア
+
+- Python 3
+
+## 動作環境
+
+- OS：テスト環境を記載
+- Python：テストしたバージョンを記載
+
+## 参考資料
+
+- [NMEA GPGGA仕様](https://docs.novatel.com/OEM7/Content/Logs/GPGGA.htm)
+- [GeoJSON仕様（RFC 7946）](https://www.rfc-editor.org/rfc/rfc7946.html)
+
 ## ライセンス
-BSD 3-Clause License
 
-Copyright (c) 2026, Takumi Yokoyama
+このソフトウェアはBSD 3-Clause Licenseの下で公開されています。
+詳細はLICENSEファイルを参照してください。
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-3. Neither the name of the copyright holder nor the names of its
-   contributors may be used to endorse or promote products derived from
-   this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+© 2026 Takumi Yokoyama
