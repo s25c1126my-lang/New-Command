@@ -1,6 +1,8 @@
 
 # drone_project
 
+![test](https://github.com/s25c1126my-lang/New-Command/actions/workflows/test.yml/badge.svg)
+
 ドローンなどのGPSログ（NMEAフォーマット）を標準入力から受け取り、
 GeoJSON形式に変換して標準出力するLinuxコマンドです。
 
@@ -18,8 +20,6 @@ GPSの測位地点や飛行軌跡を地図上に可視化するための
 - 平均海面基準の高度情報の取得（GPGGAのみ）
 - 飛行軌跡の生成（`--track`）
 - エラーメッセージの標準エラー出力
-
-## インストール方法
 
 ## インストール方法
 
@@ -156,6 +156,5 @@ $ python3 drone_project.py --help
 ## ライセンス
 
 このソフトウェアはBSD 3-Clause Licenseの下で公開されています。
-詳細はLICENSEファイルを参照してください。
-
+- 詳細は[LICENSE](./LICENSE)を参照してください。
 © 2026 Takumi Yokoyama
